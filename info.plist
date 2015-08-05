@@ -1,6 +1,16 @@
-{	"contactEmailRot13" = "qri@ffbyvzna.pbz";
-	contactName = "Sherif Soliman";
-	description = "Visualize email history and trends";
-	name = "Visualize";
-	uuid = "CDE5EA87-EAC3-42D6-8E00-B8049F55682C";
-}
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>contactEmailRot13</key>
+	<string>qri@ffbyvzna.pbz</string>
+	<key>contactName</key>
+	<string>Sherif Soliman</string>
+	<key>description</key>
+	<string>Visualize email history and trends</string>
+	<key>name</key>
+	<string>Visualize</string>
+	<key>uuid</key>
+	<string>CDE5EA87-EAC3-42D6-8E00-B8049F55682C</string>
+</dict>
+</plist>
