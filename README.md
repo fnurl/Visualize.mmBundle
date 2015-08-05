@@ -2,11 +2,11 @@
 
 Visualize email history and trends.
 
-![Pie chart of selected emails by day of week](screenshots/by_time_pie_chart.png)
+![Pie chart of selected emails by day of week](https://github.com/sheriferson/Visualize.mmBundle/blob/master/screenshots/by_time_pie_chart.png)
 
-![Bar chart of selected emails by sender](screenshots/by_sender_bar_chart.png)
+![Bar chart of selected emails by sender](https://github.com/sheriferson/Visualize.mmBundle/blob/master/screenshots/by_sender_bar_chart.png)
 
-![Scatterplot of selected emails over time](screenshots/by_time_scatterplot.png)
+![Scatterplot of selected emails over time](https://github.com/sheriferson/Visualize.mmBundle/blob/master/screenshots/by_time_scatterplot.png)
 
 # Installation
 
