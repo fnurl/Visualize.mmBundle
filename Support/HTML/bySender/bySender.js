@@ -2,8 +2,12 @@
 var color = d3.scale.ordinal()
     .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
 
-d3.csv(urlObject().parameters.csv_file, function(data) {
-    emails = data
+// Safari will cache the data file for a long time
+// unless:
+datafile = urlObject().parameters.csv_file + '?nocache=' + (new Date()).getTime()
+
+d3.csv(datafile, function(data) {
+    var emails = data
     pieBySender(emails)
     barBySender(emails)
 })
@@ -18,7 +22,7 @@ d3.csv(urlObject().parameters.csv_file, function(data) {
 //                   888                       
 //                  o888o                      
 
-function pieBySender() {
+function pieBySender(emails) {
 
     // aggregate the count of emails per sender
     var data = d3.nest()
@@ -116,7 +120,7 @@ function pieBySender() {
 //   .8'  .8'        888   888 d8(  888   888     
 //  .8'  .8'         `Y8bod8P' `Y888""8o d888b    
                                                
-function barBySender() {
+function barBySender(emails) {
      // aggregate the count of emails per sender
     var data = d3.nest()
         .key(function(d) { return d.name; })
@@ -136,6 +140,35 @@ function barBySender() {
         return b.values - a.values;
     })
 
+    // limit number of senders represented in bar graph to 50
+    var originalSenderNumber = data.length
+    if (originalSenderNumber > 50)
+    {
+      data = data.slice(0, 50)
+      var excludedSenderNumber = originalSenderNumber - data.length
+
+      if (excludedSenderNumber < 2) {
+        var exSenderMessage = " sender couldn't fit in the bar graph and was excluded."
+      } else {
+        exSenderMessage = " senders couldn't fit in the bar graph and were excluded."
+      }
+
+      d3.select('#excludedSenders')
+        .style('fill', '#000')
+        .style('color', '#c43c35')
+        .style('border-radius', '3px')
+        .style('padding-left', '5px')
+        .style('padding-right', '5px')
+        .style('display', 'inline-block')
+        .append('p')
+        .html("<b>" + 
+              excludedSenderNumber +
+              "</b>" +
+              exSenderMessage)
+    } else {
+      d3.select('#excludedSenders').remove()
+    }
+
     //                                                  o8o              
     //                                                  `"'              
     // ooo. .oo.  .oo.    .oooo.   oooo d8b  .oooooooo oooo  ooo. .oo.   
@@ -146,11 +179,11 @@ function barBySender() {
     //                                      d"     YD                    
     //                                      "Y88888P'                    
 
-    var margin = { top: 30, right: 40, bottom: 170, left: 30 }
+    var margin = { top: 30, right: 40, bottom: 250, left: 70 }
                                                                   
 
     var width = 900 - margin.left - margin.right,
-        height = 600 - margin.top - margin.bottom
+        height = 680 - margin.top - margin.bottom
    
     var xScale = d3.scale.ordinal().domain(d3.range(0,data.length)).rangeBands([0, width], .2);
 
@@ -257,8 +290,6 @@ function barBySender() {
 
 }
 
-                                         
-                                         
 //  .oooo.o  .oooo.   oooo    ooo  .ooooo.  
 // d88(  "8 `P  )88b   `88.  .8'  d88' `88b 
 // `"Y88b.   .oP"888    `88..8'   888ooo888 

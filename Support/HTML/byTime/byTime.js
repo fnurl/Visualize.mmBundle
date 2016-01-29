@@ -5,12 +5,72 @@ var color = d3.scale.ordinal()
 // days of the week corresponding to the integer returned by [date].getDay()
 var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
 
-d3.csv(urlObject().parameters.csv_file, function(data) {
+// margin and dimensions needed for both scatterplot and linegraph
+var margin = { top: 70, right: 100, bottom: 60, left: 30 }
+                                                              
+var width = 900 - margin.left - margin.right,
+    timeGraphWidth = width,
+    timeGraphHeight = 200,
+    height = 800 - timeGraphHeight - margin.top - margin.bottom
+
+// Safari will cache the data file for a long time
+// unless:
+datafile = urlObject().parameters.csv_file + '?nocache=' + (new Date()).getTime()
+
+d3.csv(datafile, function(data) {
+    // need emails to be global for function that redraws line
     emails = data
+
+    // filter out emails with missing date headers
+    // (which is a thing that happens)
+    emails = sanitizeEmails(emails)
     pieByDays(emails)
     seriesTime(emails)
+    lineTime(emails, 4, false)
 })
 
+//                                 o8o  
+//                                 `"'  
+//  .oooo.o  .oooo.   ooo. .oo.   oooo  
+// d88(  "8 `P  )88b  `888P"Y88b  `888  
+// `"Y88b.   .oP"888   888   888   888  
+// o.  )88b d8(  888   888   888   888  
+// 8""888P' `Y888""8o o888o o888o o888o 
+
+function sanitizeEmails(emails) {
+    var originalCount = emails.length
+    emails = emails.filter(function(ems) {
+        return ems.localDateTime != "";
+    })
+    var newCount = emails.length
+    var excludedCount = originalCount - newCount
+
+    if (excludedCount > 0) {
+        if (excludedCount < 2) {
+            var datemessage = " message was missing a date header and was excluded."
+        } else {
+            var datemessage = " messages were missing a date header and were excluded."
+        }
+
+        d3.select('#excludedEmails')
+            .style('color', 'white')
+            .style('background-color', '#c43c35')
+            .style('text-transform', 'uppercase')
+            .style('border-radius', '3px')
+            .style('padding-left', '5px')
+            .style('padding-right', '5px')
+            .style('display', 'inline-block')
+            .append('p')
+            .html("<b>" + 
+                  excludedCount +
+                  "</b>" +
+                  datemessage)
+    } else { // no excluded emails, delete excludedEmails div
+        d3.select('#excludedEmails').remove()
+    }
+
+    return emails
+}
 
 //        .o   .o               o8o        .o8                                 
 //       .8'  .8'               `"'       "888                                 
@@ -22,7 +82,7 @@ d3.csv(urlObject().parameters.csv_file, function(data) {
 //                   888                                  .o..P'               
 //                  o888o                                 `Y8P'                
                                                                             
-function pieByDays() {
+function pieByDays(emails) {
 	// some functions to parse the date
 	parseDate = d3.time.format("%Y-%m-%d").parse
 	parseTime = d3.time.format("%H:%M:%S").parse
@@ -137,7 +197,7 @@ function pieByDays() {
 //  .8'  .8'        8""888P' `Y8bod8P' d888b    o888o `Y8bod8P' 8""888P' 
 
 
-function seriesTime() {
+function seriesTime(emails) {
 
     //                                                  o8o              
     //                                                  `"'              
@@ -148,12 +208,6 @@ function seriesTime() {
     // o888o o888o o888o `Y888""8o d888b    `8oooooo.  o888o o888o o888o 
     //                                      d"     YD                    
     //                                      "Y88888P'                    
-
-    var margin = { top: 60, right: 100, bottom: 60, left: 30 }
-    var timeGraphWidth = 220
-                                                                  
-    var width = 900 - margin.left - margin.right,
-        height = 500 - margin.top - margin.bottom
 
    	var formatDay_Time = d3.time.format("%H:%M")		// tooltip time
     var formatWeek_Year = d3.time.format("%B %d, %Y")	// tooltip date
@@ -170,18 +224,20 @@ function seriesTime() {
     	.scale(x)
     	.orient('bottom')
     	.ticks(10)
+        .outerTickSize(0)
 
     var yAxis = d3.svg.axis()
     	.scale(y)
     	.orient('right')
     	.ticks(24)
+        .outerTickSize(0)
     	.tickFormat(formatDay_Time)
 
     var svg = d3.select('#timeseries').append('svg')
     	.attr('id', 'timeseriesSVG')
         .style('background-color', 'white')
     	.attr('width', width + margin.left + margin.right)
-    	.attr('height', height + margin.top + margin.bottom)
+    	.attr('height', height + timeGraphHeight + margin.top + margin.bottom)
     	.append('g')
     		.attr('class', "timeSeriesG")
     		.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
@@ -203,7 +259,7 @@ function seriesTime() {
 
     svg.append("g")
         .attr("class", "y axis")
-        .attr("transform", "translate("  + (width+15) +  ",0)")
+        .attr("transform", "translate("  + (width + 15) +  ",0)")
         .call(yAxis)
         .selectAll('path')
         	.style('fill', 'none')
@@ -221,7 +277,7 @@ function seriesTime() {
         .attr("class", "dot")
         .attr("r", 2 )
         .style("opacity", 0.9)
-        .style("fill", color(5) )
+        .style("fill", "#33a3cc" )
         .attr("cx", function(d) { return x(d.date); })
         .attr("cy", function(d) { return y(d.time); })
 
@@ -244,20 +300,165 @@ function seriesTime() {
 
     	seriesTooltip.html(d.name + "</br>" + d.subjectLine + "</br>" + formatWeek_Year(d.date) + "</br>" + formatDay_Time(d.time))
       		.style('left', (d3.event.pageX - 55) + 'px')
-      		.style('top', (d3.event.pageY - 80) + 'px')
+      		.style('top', (d3.event.pageY - 90) + 'px')
       	})
 
         .on('mouseout', function(d) {
             d3.select(this).transition().duration(100)
                 .attr('r', 2)
-                .style('fill', color(5))
+                .style('fill', "#33a3cc")
 
         seriesTooltip.html()
         seriesTooltip.transition()
             .style('opacity', 0)
       })
+
+    // extend axes with lines for separation
+    d3.select('#timeseriesSVG').append('line')
+        .style('stroke', 'black')
+        .attr('x1', width + margin.left)
+        .attr('y1', height + margin.top + 5)
+        .attr('x2', width + margin.left + 80)
+        .attr('y2', height + margin.top + 5)
+
+    d3.select('#timeseriesSVG').append('line')
+        .style('stroke', 'black')
+        .attr('x1', width + margin.left + 15)
+        .attr('y1', height + margin.top)
+        .attr('x2', width + margin.left + 15)
+        .attr('y2', height + margin.top + 55)
+
 }
 
+function lineTime(emails, movingMeanWindow, overrideWindow) {
+
+    // oooo   o8o                        
+    // `888   `"'                        
+    //  888  oooo  ooo. .oo.    .ooooo.  
+    //  888  `888  `888P"Y88b  d88' `88b 
+    //  888   888   888   888  888ooo888 
+    //  888   888   888   888  888    .o 
+    // o888o o888o o888o o888o `Y8bod8P' 
+
+
+    d3.selectAll('#timeseriesSVG').append('g')
+        .attr('id', 'lineGraph')
+        .attr('transform', 'translate(' + margin.left + ',' + (height + margin.top + 55) + ')')
+        .append('rect')
+            .attr('height', timeGraphHeight)
+            .attr('width', timeGraphWidth)
+            .style('fill', 'none')
+
+    // aggregate totals by day
+   var lineData = d3.nest()
+        .key(function(d) { return d.date; })
+        .rollup(function(d) {
+            return d3.sum(d, function(g) { return g.count; })
+    })
+    .entries(emails);
+
+    lineData.forEach(function(d) {
+        d.key = new Date(d.key)
+    })    
+
+    // sort lineData by date
+    lineData.sort(function compareNumbers(a, b) {
+        return a.key - b.key
+    })
+
+    var earliest = d3.min(lineData, function(d) { return d.key; })
+    var latest = d3.max(lineData, function(d) { return d.key; })
+
+    var dirtyLineXRange = d3.time.scale().domain(d3.extent(lineData, function(d) { return d.key; })).range([0, timeGraphWidth])
+
+    // fill in missing days with value of 0 emails
+    var cleanedData = dirtyLineXRange.ticks(d3.time.day, 1).map(function(iteratedDay) {
+        return _.find(lineData, {key: iteratedDay}) || {key: iteratedDay, values: 0}
+    })
+
+    // implement moving mean
+    var movingMean = []
+    var smooth = false
+    if (overrideWindow == true) {
+        smooth = true
+    } else {
+        if (cleanedData.length > 400 && cleanedData.length < 1000) {
+            smooth = true
+        } else if (cleanedData.length > 1000 && cleanedData.length < 3000) {
+            smooth = true
+            movingMeanWindow = 6
+        } else if (cleanedData.length > 3000) {
+            smooth = true
+            movingMeanWindow = 6
+        }
+    }
+
+    if (smooth == true) {
+        // display value of moving mean to user
+        document.getElementById('smoothingwindow').value = movingMeanWindow
+
+        // create a moving mean array from cleanedData
+        for (var ii = 0; ii <= cleanedData.length; ii++)
+        {
+            if (ii < (movingMeanWindow/2)) {
+                var meanSlice = cleanedData.slice(0,
+                                                  movingMeanWindow - ii);
+            } else if (ii > (cleanedData.length - movingMeanWindow)) {
+                var meanSlice = cleanedData.slice(cleanedData.length - movingMeanWindow - ii,
+                                                  cleanedData.length);
+            } else {
+                var meanSlice = cleanedData.slice(ii - (movingMeanWindow/2), 
+                                                  ii + (movingMeanWindow/2));            
+            }
+
+            var mean = d3.sum(meanSlice, function(meanSlice) { return meanSlice.values }) / meanSlice.length
+
+            movingMean.push(Math.round(mean * 100) / 100)
+        }
+
+        // transfer values of array to cleanedData array
+        for (var ii = 0; ii < cleanedData.length; ii++)
+        {
+            cleanedData[ii].values = movingMean[ii]
+        }
+    }
+
+    // continue with the scales and plotting the line
+    var lineXRange = d3.time.scale().domain(d3.extent(cleanedData, function(d) { return d.key; })).range([0, timeGraphWidth])    
+    var lineYRange = d3.scale.linear().domain([0, d3.max(cleanedData, function(d) { return d.values; })]).range([timeGraphHeight, 0])
+
+    lineYAxis = d3.svg.axis()
+        .scale(lineYRange)
+        .ticks(10)
+        .tickPadding(10)
+        .outerTickSize(0)
+        .orient('right')
+
+    var linePlotFunc = d3.svg.line()
+        .x(function(d) { return lineXRange(d.key); })
+        .y(function(d) { return lineYRange(d.values); })
+        .interpolate('monotone')
+
+    timeGraph = d3.select("#lineGraph")
+
+    timeGraph.append('g')
+        .attr('transform', 'translate(' + (timeGraphWidth + 15) + ',0)' )
+        .call(lineYAxis)
+            .selectAll('path')
+            .style('fill', 'none')
+            .style('stroke', '#000')
+
+    timeGraph.append('path')
+        .attr('id', 'lineplot')
+        .attr('d', linePlotFunc(cleanedData) )
+        .attr('stroke', "#33a3cc")
+        .attr('fill', 'none')
+        .style('stroke-width', 1.5)
+
+    timeGraph.selectAll('text')
+        .style('font-size', '12px')               // need to set these for savetopng to work
+        .style('font-family', '-apple-system')    // need to set these for savetopng to work
+}
 
 //  .oooo.o  .oooo.   oooo    ooo  .ooooo.  
 // d88(  "8 `P  )88b   `88.  .8'  d88' `88b 
@@ -272,3 +473,35 @@ d3.select('#savePieTime').on('click', function() {
 d3.select('#saveTimeSeries').on('click', function() {
 	saveSvgAsPng(document.getElementById('timeseriesSVG'), 'email_time_series.png')
 })
+
+
+d3.select('#redrawLine').on('click', function() {
+    var newWindow = document.getElementById('smoothingwindow').value
+
+    if (newWindow < 0 || newWindow == "") {
+        d3.select('#windowwarning').text("value must be a positive integer")
+    } else {
+        d3.select('#windowwarning').text("")
+        d3.select('#lineGraph').remove()
+        lineTime(emails, newWindow, true)
+    }
+})
+
+// Initialize color picker and act on color changes
+$("#colorpicker").spectrum({
+    showInput: true,
+    showInitial: true,
+    preferredFormat: "hex",
+    color: "#33a3cc"
+});
+
+$("#colorpicker").on('change.spectrum', function(e, tinycolor) {
+        var pickedColor = tinycolor.toHexString()
+        console.log(pickedColor);
+
+        d3.select("#timeseries").selectAll('circle')
+            .style('fill', pickedColor)
+
+        d3.select("#lineGraph").selectAll('#lineplot')
+            .style('stroke', pickedColor)
+});
