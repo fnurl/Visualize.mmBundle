@@ -10,11 +10,11 @@ Visualize email history and trends.
 
 You can change colors.
 
-![Different color](screenshots/by_time_scatterplot_pink.png)
+![Different color](https://github.com/sheriferson/Visualize.mmBundle/blob/master/screenshots/by_time_scatterplot_pink.png)
 
 And even plot a moving average instead of raw numbers.
 
-![Moving average](screenshots/by_time_scatterplot_pink_movmean.png)
+![Moving average](https://github.com/sheriferson/Visualize.mmBundle/blob/master/screenshots/by_time_scatterplot_pink_movmean.png)
 
 # Installation
 
