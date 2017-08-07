@@ -8,7 +8,7 @@ Visualize email history and trends.
 
 ![Scatterplot of selected emails over time](https://github.com/sheriferson/Visualize.mmBundle/blob/master/screenshots/by_time_scatterplot.png)
 
-![Bar chart of selected emails by tag](screenshots/by_tag_bar_chart.png)
+![Bar chart of selected emails by tag](https://github.com/sheriferson/Visualize.mmBundle/blob/master/screenshots/screenshots/by_tag_bar_chart.png)
 
 You can change colors.
 
